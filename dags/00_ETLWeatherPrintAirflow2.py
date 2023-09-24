@@ -1,24 +1,24 @@
 
 
 # imports important for Airflow
-from airflow import DAG
-from airflow.operators.python_operator import PythonOperator
-
+import datetime as dt
 # Import Modules for code
 import json
-import requests
-import datetime as dt
 import logging
 
+import requests
+from airflow import DAG
+from airflow.operators.python_operator import PythonOperator
 # import custom transformer for API data
 from transformer import transform_weatherAPI
+
 
 def my_extract(**kwargs):
 
     # TODO: Change the API Key to your key!!
 
     #Fetch the data from an API and print it
-    payload = {'Key': '5a91e86eedc148059a390511211510', 'q': 'Berlin', 'aqi': 'no'}
+    payload = {'Key': '73de94f8872d44f2a70144923230103', 'q': 'Lagos', 'aqi': 'no'}
     r = requests.get("http://api.weatherapi.com/v1/current.json", params=payload)
 
     # Get the json
@@ -55,7 +55,7 @@ def my_load(**kwargs):
     logger.info(weather_json)
 
 
-with DAG('ETLWeatherPrintAirflow2', description='Airflow2.0 DAG', start_date=dt.datetime(2018, 11, 1),schedule_interval = "0 * * * *", catchup=False,tags=['LearnDataEngineering']) as dag:
+with DAG('ETLWeatherPrintAirflow2', description='Airflow2.0 DAG', start_date=dt.datetime(2018, 11, 1),schedule_interval = "0 * * * *", catchup=False,tags=['Omotosho Ayomide']) as dag:
     ext = PythonOperator(
         task_id='extract',
         python_callable=my_extract,

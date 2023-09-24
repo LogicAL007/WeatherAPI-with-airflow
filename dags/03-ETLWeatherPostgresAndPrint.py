@@ -39,7 +39,7 @@ def ETLWeatherPostgresAndPrint():
 
         # TODO: Change the API Key to your key!!
 
-        payload = {'Key': '5a91e86eedc148059a390511211510', 'q': 'Berlin', 'aqi': 'no'}
+        payload = {'Key': '73de94f8872d44f2a70144923230103', 'q': 'Berlin', 'aqi': 'no'}
         r = requests.get("http://api.weatherapi.com/v1/current.json", params=payload)
 
         # Get the json
