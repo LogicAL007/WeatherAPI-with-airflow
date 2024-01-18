@@ -1,11 +1,8 @@
-
-
 import json
-import pandas as pd
 from pandas import DataFrame, json_normalize
 import datetime as dt
 
-def transform_weatherAPI(im_json : str):
+def transform_weatherAPI(im_json: str):
     
     print(im_json)
 

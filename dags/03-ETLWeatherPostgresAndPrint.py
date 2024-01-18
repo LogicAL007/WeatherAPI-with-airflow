@@ -6,49 +6,35 @@ from airflow.decorators import dag, task
 # Import Modules for code
 import json
 import requests
-import pandas as pd
-from pandas import DataFrame, json_normalize
-import datetime as dt
 import psycopg2 
-
+import os
 # import custom transformer for API data
 from transformer import transform_weatherAPI
+from dotenv import load_dotenv
 
-
-# [START instantiate_dag]
+load_dotenv()
+API_KEY = os.getenv("API_KEY")
+USER_PASSWORD = os.getenv('USER_PASSWORD')
+USERNAME = os.getenv('USER')
+DB_NAME = os.getenv('DB_NAME')
 @dag(
-    schedule_interval=None,                             #interval how often the dag will run (can be cron expression as string)
-    start_date=pendulum.datetime(2021, 1, 1, tz="UTC"), # from what point on the dag will run (will only be scheduled after this date)
-    catchup=False,                                      # no catchup needed, because we are running an api that returns now values                
-    tags=['LearnDataEngineering'],                      # tag the DAQ so it's easy to find in AirflowUI
+    schedule_interval=None,
+    start_date=pendulum.datetime(2024, 1, 1, tz="UTC"),
+    catchup=False,
+    tags=['Loading weatherAPI to PostgresSQL with Airflow'],
 )
 def ETLWeatherPostgresAndPrint():
-    """
-    ### TaskFlow API Tutorial Documentation
-    This is a simple ETL data pipeline example which demonstrates the use of
-    the TaskFlow API using three simple tasks for Extract, Transform, and Load.
-    Documentation that goes along with the Airflow TaskFlow API tutorial is
-    located
-    [here](https://airflow.apache.org/docs/apache-airflow/stable/tutorial_taskflow_api.html)
-    """
-    # [END instantiate_dag]
-
     # EXTRACT: Query the data from the Weather API
     @task()
     def extract():
-
-        # TODO: Change the API Key to your key!!
-
-        payload = {'Key': '73de94f8872d44f2a70144923230103', 'q': 'Berlin', 'aqi': 'no'}
+        payload = {'Key': API_KEY, 'q': 'Berlin', 'aqi': 'no'}
         r = requests.get("http://api.weatherapi.com/v1/current.json", params=payload)
 
         # Get the json
         r_string = r.json()
 
-        #weather_data_dict = json.loads(r_string)
         print(r_string)
         return r_string
-
 
     # TRANSFORM: Transform the API response into something that is useful for the load
     @task()
@@ -70,17 +56,16 @@ def ETLWeatherPostgresAndPrint():
     @task()
     def load(weather_data: dict):
         """
-        #### Load task
         A simple Load task which takes in the result of the Transform task and
-        instead of saving it to the posgres database.
+        instead of saving it to the postgres database.
         """
 
         try:
-            connection = psycopg2.connect(user="airflow",
-                                        password="airflow",
+            connection = psycopg2.connect(user=USERNAME,
+                                        password=USER_PASSWORD,
                                         host="postgres",
                                         port="5432",
-                                        database="WeatherData")
+                                        database=DB_NAME)
             cursor = connection.cursor()
 
             postgres_insert_query = """INSERT INTO temperature (location, temp_c, wind_kph, time) VALUES ( %s , %s, %s, %s);"""
@@ -112,7 +97,6 @@ def ETLWeatherPostgresAndPrint():
     @task()
     def query_print(weather_data: dict):
         """
-        #### Print task
         This just prints out the result into the log (even without instantiating a logger)
         """
         print(weather_data)
@@ -127,5 +111,5 @@ def ETLWeatherPostgresAndPrint():
 
 
 # Invocate the DAG
-lde_weather_dag_posgres = ETLWeatherPostgresAndPrint()
+lde_weather_dag_postgres = ETLWeatherPostgresAndPrint()
 
