@@ -23,20 +23,17 @@ DB_NAME = os.getenv('DB_NAME')
     catchup=False,
     tags=['Loading weatherAPI to PostgresSQL with Airflow'],
 )
-def ETLWeatherPostgresAndPrint():
-    # EXTRACT: Query the data from the Weather API
+
+def etl_weather_batch():
+    # Extract: Extract data from api
     @task()
     def extract():
-        payload = {'Key': API_KEY, 'q': 'Berlin', 'aqi': 'no'}
+        payload = {'Key': API_KEY, 'q': 'Lagos', 'aqi': 'no'}
         r = requests.get("http://api.weatherapi.com/v1/current.json", params=payload)
-
-        # Get the json
         r_string = r.json()
-
-        print(r_string)
         return r_string
 
-    # TRANSFORM: Transform the API response into something that is useful for the load
+    # TRANSFORM: Transform the API response into dict and filters the columns
     @task()
     def transform(weather_json: json):
         """
@@ -111,5 +108,5 @@ def ETLWeatherPostgresAndPrint():
 
 
 # Invocate the DAG
-lde_weather_dag_postgres = ETLWeatherPostgresAndPrint()
+lde_weather_dag_postgres = etl_weather_batch()
 
